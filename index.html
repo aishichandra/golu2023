@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiny Golu 2023</title>
+
+<style>
+  /* ── Reset & variables ───────────────────────────── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  :root {
+    --bg: #fdf6ec;
+    --text: #1e1208;
+    --text-muted: #6b5a45;
+    --accent: #b8860b;
+  }
+
+  /* ── Base & layout ───────────────────────────────── */
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .layout {
+    width: 100%;
+    max-width: 1200px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 1.5rem;
+    align-items: flex-start;
+    background: var(--bg);
+  }
+  /* Image on the LEFT, sidebar on the RIGHT */
+  .layout .img-clip { order: 1; flex: 1 1 auto; min-width: 0; }
+  .layout .sidebar  { order: 2; flex: 0 0 260px; }
+
+  /* ── Hero ─────────────────────────────────────────── */
+  .hero {
+    width: 100%;
+    text-align: center;
+    padding: 2.5rem 2rem 1.5rem;
+    background: var(--bg);
+    position: relative;
+  }
+  .hero h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+  .hero h1 em { font-style: italic; }
+  .hero-eye {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  /* ── Image & zoom container ──────────────────────── */
+  .img-clip {
+    position: relative;
+    overflow: hidden;
+  }
+  .img-wrap {
+    position: relative;
+    transform-origin: 0 0;
+    will-change: transform;
+    user-select: none;
+    cursor: default;
+  }
+  .golu-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+  }
+
+  /* ── Dots (markers) ──────────────────────────────── */
+  .dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(var(--inv, 1));
+    transform-origin: center center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 0 0 1.5px rgba(255,255,255,0.85), 0 1px 5px rgba(0,0,0,0.7);
+    transition: transform 0.1s;
+  }
+  .dot:hover {
+    transform: translate(-50%, -50%) scale(calc(var(--inv, 1) * 2.2));
+    z-index: 50;
+  }
+  .dot::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    opacity: 0.35;
+    animation: pulse 2.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.35; }
+    50%       { transform: scale(1.8); opacity: 0.05; }
+  }
+  .dot[data-row="1"], .dot[data-row="2"] { background: var(--accent); }
+  .dot[data-row="3"] { background: #2e86ab; }
+  .dot[data-row="4"] { background: #27ae60; }
+  .dot[data-row="5"] { background: #8e44ad; }
+
+  /* ── Sidebar ─────────────────────────────────────── */
+  .sidebar {
+    flex: 0 0 260px;
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.3rem;
+    position: sticky;
+    top: 1.5rem;
+    max-height: 90vh;
+    overflow: hidden;
+  }
+  #wikiPanel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border-left: 2px solid rgba(184,134,11,0.2);
+    padding-left: 1rem;
+  }
+
+  /* ── Wiki panel states ────────────────────────────── */
+  #wikiEmpty p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  #wikiContent { display: none; }
+
+  .wiki-series {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
+    display: none;
+  }
+  .wiki-series-name {
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  #wikiImgPh {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(184,134,11,0.06);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+  #wikiImg {
+    display: none;
+    width: 100%;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    object-fit: cover;
+  }
+  #wikiName {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+  #wikiDesc {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+  }
+  .wiki-link {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .wiki-link:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Reset zoom button ───────────────────────────── */
+  #resetBtn {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: var(--bg);
+    border: 1px solid var(--text-muted);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 500;
+  }
+  #resetBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Responsive ──────────────────────────────────── */
+  @media (max-width: 640px) {
+    .layout {
+      flex-direction: column;
+    }
+    .layout .img-clip { order: 1; }
+    .layout .sidebar  { order: 2; flex: none; width: 100%; }
+    #wikiPanel { border-left: none; border-top: 2px solid rgba(184,134,11,0.2); padding-left: 0; padding-top: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>Tiny <em>Golu</em></h1>
+    <p class="hero-eye">Navratri · 2023</p>
+  </header>
+
+  <main class="layout">
+
+    <!-- LEFT: image -->
+    <div class="img-clip">
+      <div class="img-wrap" id="imgWrap">
+        <img class="golu-img" src="Tiny Golu 2023.png" alt="Golu 2023 arrangement" id="mainImg">
+        <!-- dots injected here by JS -->
+      </div>
+    </div>
+
+    <!-- RIGHT: wiki info panel -->
+    <aside class="sidebar">
+      <div id="wikiPanel">
+
+        <!-- Default state -->
+        <div id="wikiEmpty">
+          <p>Hover over a <strong>dot</strong> on the image to learn about each figurine.</p>
+        </div>
+
+        <!-- Populated state (shown on hover) -->
+        <div id="wikiContent">
+          <div id="wikiSeries" class="wiki-series">
+            Series: <span id="wikiSeriesName" class="wiki-series-name"></span>
+          </div>
+          <div id="wikiImgPh">🙏</div>
+          <img id="wikiImg" alt="">
+          <div id="wikiName"></div>
+          <div id="wikiDesc"></div>
+          <a id="wikiLink" class="wiki-link" href="#" target="_blank" rel="noopener">Read on Wikipedia →</a>
+        </div>
+
+      </div>
+    </aside>
+
+  </main>
+
+  <button id="resetBtn" onclick="resetZoom()">Reset zoom</button>
+
+<script>
+const wrap = document.getElementById('imgWrap');
+let scale=1, tx=0, ty=0, zoomTarget=1, zoomOriginX=0, zoomOriginY=0;
+let dragging=false, lastX=0, lastY=0, zoomRafId=null, lastTap=0;
+let activeDot=null;
+const MIN=1, MAX=8;
+const wikiCache = {};
+const customImages = {};
+const CUSTOM_IMAGES = {};
+
+function renderDots(data) {
+  const container = document.getElementById('imgWrap');
+  document.querySelectorAll('.dot').forEach(d => d.remove());
+  if (!data || !data.length) return;
+  data.forEach(function (char) {
+    const div = document.createElement('div');
+    div.className = 'dot';
+    div.style.left = char.position.left + '%';
+    div.style.top  = char.position.top  + '%';
+    div.dataset.name   = char.name;
+    div.dataset.wiki   = char.wiki;
+    div.dataset.row    = String(char.row);
+    div.dataset.series = char.series || '';
+    container.appendChild(div);
+  });
+}
+
+function setupDotListeners() {
+  document.querySelectorAll('.dot').forEach(function (dot) {
+    dot.addEventListener('mouseenter', function () { showWikiPanel(dot); });
+    dot.addEventListener('mouseleave', showInstructions);
+    dot.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (activeDot === dot && scale >= 3.5) {
+        activeDot = null; resetZoom(); return;
+      }
+      activeDot = dot;
+      var dotPctX = parseFloat(dot.style.left) / 100;
+      var dotPctY = parseFloat(dot.style.top)  / 100;
+      var clip    = wrap.parentElement;
+      var clipCx  = clip.offsetWidth  / 2;
+      var clipCy  = clip.offsetHeight / 2;
+      var targetScale = 4;
+      var imgW = wrap.offsetWidth;
+      var imgH = wrap.offsetHeight;
+      zoomTarget  = targetScale;
+      zoomOriginX = dotPctX * imgW;
+      zoomOriginY = dotPctY * imgH;
+      var newTx = cl(clipCx - dotPctX * imgW * targetScale, -(imgW * (targetScale - 1)), 0);
+      var newTy = cl(clipCy - dotPctY * imgH * targetScale, -(imgH * (targetScale - 1)), 0);
+      animateTo(targetScale, newTx, newTy);
+    });
+  });
+}
+
+function cl(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+
+// ── ZOOM / PAN ─────────────────────────────────────────
+function applyT(anim) {
+  const maxTx = wrap.offsetWidth  * (scale-1);
+  const maxTy = wrap.offsetHeight * (scale-1);
+  tx = cl(tx, -maxTx, 0);
+  ty = cl(ty, -maxTy, 0);
+  if (anim) wrap.style.transition = 'transform .3s ease';
+  wrap.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  if (anim) setTimeout(() => wrap.style.transition='', 350);
+  const inv = 1/scale;
+  document.querySelectorAll('.dot').forEach(d => d.style.setProperty('--inv', inv));
+  document.getElementById('resetBtn').style.opacity = scale > 1.05 ? '1' : '0';
+  wrap.style.cursor = scale > 1 ? (dragging ? 'grabbing' : 'grab') : 'default';
+}
+
+let aTx=null, aTy=null;
+function animateTo(targetScale, targetTx, targetTy) {
+  zoomTarget=targetScale; aTx=targetTx; aTy=targetTy;
+  if (!zoomRafId) zoomRafId = requestAnimationFrame(smoothZoomTick);
+}
+function smoothZoomTick() {
+  const diff = zoomTarget - scale;
+  if (Math.abs(diff) < 0.001) {
+    scale=zoomTarget;
+    if (aTx!==null) { tx=aTx; ty=aTy; aTx=null; aTy=null; }
+    applyT(); zoomRafId=null; return;
+  }
+  const prev = scale;
+  scale += diff * 0.18;
+  if (aTx!==null) { tx+=(aTx-tx)*0.18; ty+=(aTy-ty)*0.18; }
+  else { tx=zoomOriginX-(zoomOriginX-tx)*(scale/prev); ty=zoomOriginY-(zoomOriginY-ty)*(scale/prev); }
+  applyT();
+  zoomRafId = requestAnimationFrame(smoothZoomTick);
+}
+
+function resetZoom() {
+  scale=1; zoomTarget=1; tx=0; ty=0; aTx=null; aTy=null; activeDot=null;
+  if (zoomRafId) { cancelAnimationFrame(zoomRafId); zoomRafId=null; }
+  applyT(true);
+}
+
+wrap.addEventListener('dblclick', e => { e.preventDefault(); if (scale > 1.05) resetZoom(); });
+wrap.addEventListener('touchend', () => { const n=Date.now(); if (n-lastTap<300) resetZoom(); lastTap=n; });
+
+wrap.addEventListener('mousedown', e => {
+  if (scale<=1 || e.target.tagName==='A') return;
+  dragging=true; lastX=e.clientX; lastY=e.clientY;
+  wrap.style.cursor='grabbing'; e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  tx+=(e.clientX-lastX)/scale; ty+=(e.clientY-lastY)/scale;
+  lastX=e.clientX; lastY=e.clientY; applyT();
+});
+window.addEventListener('mouseup', () => { dragging=false; wrap.style.cursor=scale>1?'grab':'default'; });
+
+let lt=null, ld=null;
+wrap.addEventListener('touchstart', e => {
+  lt=e.touches;
+  if (e.touches.length===2)
+    ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+},{passive:true});
+wrap.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length===2 && ld) {
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    const r=wrap.getBoundingClientRect();
+    const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-r.left;
+    const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-r.top;
+    const ns=cl(scale*d/ld, MIN, MAX);
+    tx=cx/scale-cx/ns+tx; ty=cy/scale-cy/ns+ty; scale=ns; ld=d; applyT();
+  } else if (e.touches.length===1 && scale>1 && lt?.length===1) {
+    tx+=(e.touches[0].clientX-lt[0].clientX)/scale;
+    ty+=(e.touches[0].clientY-lt[0].clientY)/scale;
+    applyT();
+  }
+  lt=e.touches;
+},{passive:false});
+wrap.addEventListener('touchend', e => { ld=null; lt=e.touches; });
+
+wrap.style.transformOrigin = '0 0';
+
+// ── LOAD DOTS ──────────────────────────────────────────
+function initDots(data) {
+  renderDots(data);
+  if (data && data.length) {
+    data.forEach(function (c) {
+      if (c.image) customImages[c.wiki] = CUSTOM_IMAGES[c.image] || c.image;
+    });
+  }
+  setupDotListeners();
+  applyT();
+}
+fetch('golu-data.json')
+  .then(r => r.json())
+  .then(initDots)
+  .catch(() => {
+    var data = [];
+    try {
+      var el = document.getElementById('golu-data-embed');
+      if (el) data = JSON.parse(el.textContent);
+    } catch(e) {}
+    initDots(data);
+  });
+
+// ── WIKI PANEL ─────────────────────────────────────────
+function showInstructions() {
+  document.getElementById('wikiEmpty').style.display   = 'block';
+  document.getElementById('wikiContent').style.display = 'none';
+}
+
+function showWikiPanel(dot) {
+  const wiki       = dot.dataset.wiki;
+  const name       = dot.dataset.name;
+  const seriesName = dot.dataset.series || '';
+
+  document.getElementById('wikiEmpty').style.display   = 'none';
+  document.getElementById('wikiContent').style.display = 'block';
+
+  const seriesEl     = document.getElementById('wikiSeries');
+  const seriesNameEl = document.getElementById('wikiSeriesName');
+  if (seriesName) {
+    seriesNameEl.textContent  = seriesName;
+    seriesEl.style.display    = 'block';
+  } else {
+    seriesNameEl.textContent  = '';
+    seriesEl.style.display    = 'none';
+  }
+
+  document.getElementById('wikiName').textContent = name;
+  document.getElementById('wikiDesc').textContent = '';
+  document.getElementById('wikiLink').href = 'https://en.wikipedia.org/wiki/' + wiki.replace(/ /g,'_');
+  document.getElementById('wikiContent').dataset.currentWiki = wiki;
+  document.getElementById('wikiContent').dataset.currentName = name;
+
+  const img = document.getElementById('wikiImg');
+  const ph  = document.getElementById('wikiImgPh');
+  if (customImages[wiki]) {
+    img.src = customImages[wiki];
+    img.style.display='block'; ph.style.display='none';
+  } else {
+    img.style.display='none'; ph.style.display='flex'; ph.textContent='🙏';
+  }
+
+  if (wikiCache[wiki]) { applyWikiData(wikiCache[wiki]); return; }
+
+  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(wiki.replace(/ /g,'_')))
+    .then(r => r.json())
+    .then(data => {
+      if (data.extract) { wikiCache[wiki]=data; applyWikiData(data); }
+      else return searchFallback(name, wiki);
+    })
+    .catch(() => searchFallback(name, wiki));
+}
+
+function searchFallback(name, wiki) {
+  return fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+    encodeURIComponent(name) + '&srlimit=1&format=json&origin=*')
+    .then(r => r.json())
+    .then(d => {
+      const title = d?.query?.search?.[0]?.title;
+      if (!title) throw new Error();
+      return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title));
+    })
+    .then(r => r.json())
+    .then(data => { wikiCache[wiki]=data; applyWikiData(data); })
+    .catch(() => { document.getElementById('wikiDesc').textContent = 'No Wikipedia summary found.'; });
+}
+
+function applyWikiData(data) {
+  if (data.title) document.getElementById('wikiName').textContent = data.title;
+  const full = data.extract || '';
+  document.getElementById('wikiDesc').textContent =
+    full.length > 320 ? full.slice(0,320).replace(/\s\S+$/,'')+'…' : full;
+  if (data.content_urls?.desktop?.page)
+    document.getElementById('wikiLink').href = data.content_urls.desktop.page;
+  const wiki = document.getElementById('wikiContent').dataset.currentWiki;
+  if (!customImages[wiki] && data.thumbnail?.source) {
+    const img = document.getElementById('wikiImg');
+    img.onload  = () => { img.style.display='block'; document.getElementById('wikiImgPh').style.display='none'; };
+    img.onerror = () => {};
+    img.src = data.thumbnail.source;
+  }
+}
+</script>
+</body>
+</html>
