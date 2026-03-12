@@ -47,22 +47,33 @@
   .hero {
     width: 100%;
     text-align: center;
-    padding: 2.5rem 2rem 1.5rem;
+    padding: 2.8rem 2rem 1.6rem;
     background: var(--bg);
     position: relative;
   }
   .hero h1 {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 600;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: clamp(0.7rem, 1.6vw, 0.95rem);
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
     color: var(--text);
     margin: 0;
   }
-  .hero h1 em { font-style: italic; }
+  .hero h1 em { font-style: normal; }
+  .hero-rule {
+    width: 2rem;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.45;
+    margin: 0.9rem auto 0.75rem;
+  }
   .hero-eye {
-    font-size: 0.85rem;
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     color: var(--text-muted);
-    margin-top: 0.5rem;
   }
 
   /* ── Image & zoom container ──────────────────────── */
@@ -97,7 +108,7 @@
     box-shadow: 0 0 0 1.5px rgba(255,255,255,0.85), 0 1px 5px rgba(0,0,0,0.7);
     transition: transform 0.1s;
   }
-  .dot:hover {
+  .dot:hover, .dot.pinned {
     transform: translate(-50%, -50%) scale(calc(var(--inv, 1) * 2.2));
     z-index: 50;
   }
@@ -121,7 +132,7 @@
 
   /* ── Sidebar ─────────────────────────────────────── */
   .sidebar {
-    flex: 0 0 260px;
+    flex: 0 0 240px;
     display: flex;
     flex-direction: column;
     padding-top: 0.3rem;
@@ -134,69 +145,74 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    border-left: 2px solid rgba(184,134,11,0.2);
-    padding-left: 1rem;
+    border-left: 1px solid rgba(184,134,11,0.25);
+    padding-left: 1.1rem;
   }
 
   /* ── Wiki panel states ────────────────────────────── */
   #wikiEmpty p {
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    line-height: 1.75;
     color: var(--text-muted);
-    font-size: 0.85rem;
-    line-height: 1.6;
   }
+  #wikiEmpty p strong { font-weight: 500; color: var(--text); }
 
   #wikiContent { display: none; }
 
   .wiki-series {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 0.4rem;
-    letter-spacing: 0.02em;
+    margin-bottom: 0.65rem;
     display: none;
   }
   .wiki-series-name {
-    font-weight: 700;
-    color: var(--text);
-    text-transform: uppercase;
+    font-weight: 500;
   }
   #wikiImgPh {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     width: 100%;
     aspect-ratio: 1;
-    background: rgba(184,134,11,0.06);
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
+    background: rgba(184,134,11,0.05);
+    border-radius: 2px;
+    margin-bottom: 0.9rem;
   }
   #wikiImg {
     display: none;
     width: 100%;
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
+    border-radius: 2px;
+    margin-bottom: 0.9rem;
     object-fit: cover;
   }
   #wikiName {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--text);
+    margin-bottom: 0.65rem;
   }
   #wikiDesc {
-    font-size: 0.8rem;
-    line-height: 1.6;
+    font-size: 0.82rem;
+    line-height: 1.7;
     color: var(--text-muted);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.9rem;
   }
   .wiki-link {
     display: inline-block;
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--text-muted);
     text-decoration: none;
     padding-bottom: 2px;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid rgba(107,90,69,0.3);
     transition: color 0.2s, border-color 0.2s;
   }
   .wiki-link:hover {
@@ -209,17 +225,19 @@
     position: fixed;
     bottom: 1.25rem;
     right: 1.25rem;
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     background: var(--bg);
-    border: 1px solid var(--text-muted);
-    color: var(--text);
+    border: 1px solid rgba(107,90,69,0.4);
+    color: var(--text-muted);
     padding: 0.5rem 1rem;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0;
     opacity: 0;
     transition: opacity 0.2s, border-color 0.2s, color 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     z-index: 500;
   }
   #resetBtn:hover { border-color: var(--accent); color: var(--accent); }
@@ -240,7 +258,8 @@
   <!-- Hero -->
   <header class="hero">
     <h1>Tiny <em>Golu</em></h1>
-    <p class="hero-eye">Navratri · 2023</p>
+    <div class="hero-rule"></div>
+    <p class="hero-eye">Navratri &middot; 2023</p>
   </header>
 
   <main class="layout">
@@ -259,7 +278,7 @@
 
         <!-- Default state -->
         <div id="wikiEmpty">
-          <p>Hover over a <strong>dot</strong> on the image to learn about each figurine.</p>
+          <p>Hover over a <strong>dot</strong> to learn about each figurine. Click to pin the info — click again to dismiss.</p>
         </div>
 
         <!-- Populated state (shown on hover) -->
@@ -285,7 +304,7 @@
 const wrap = document.getElementById('imgWrap');
 let scale=1, tx=0, ty=0, zoomTarget=1, zoomOriginX=0, zoomOriginY=0;
 let dragging=false, lastX=0, lastY=0, zoomRafId=null, lastTap=0;
-let activeDot=null;
+let activeDot=null, pinnedDot=null;
 const MIN=1, MAX=8;
 const wikiCache = {};
 const customImages = {};
@@ -308,12 +327,29 @@ function renderDots(data) {
   });
 }
 
+function setPinnedDot(dot) {
+  if (pinnedDot) pinnedDot.classList.remove('pinned');
+  pinnedDot = dot;
+  if (pinnedDot) pinnedDot.classList.add('pinned');
+}
+
 function setupDotListeners() {
   document.querySelectorAll('.dot').forEach(function (dot) {
     dot.addEventListener('mouseenter', function () { showWikiPanel(dot); });
-    dot.addEventListener('mouseleave', showInstructions);
+    dot.addEventListener('mouseleave', function () {
+      if (pinnedDot) { showWikiPanel(pinnedDot); } else { showInstructions(); }
+    });
     dot.addEventListener('click', function (e) {
       e.stopPropagation();
+      // Toggle pin: click pinned dot again to unpin
+      if (pinnedDot === dot) {
+        setPinnedDot(null);
+        showInstructions();
+        if (scale >= 3.5) { activeDot = null; resetZoom(); }
+        return;
+      }
+      setPinnedDot(dot);
+      showWikiPanel(dot);
       if (activeDot === dot && scale >= 3.5) {
         activeDot = null; resetZoom(); return;
       }
@@ -375,6 +411,7 @@ function smoothZoomTick() {
 
 function resetZoom() {
   scale=1; zoomTarget=1; tx=0; ty=0; aTx=null; aTy=null; activeDot=null;
+  setPinnedDot(null);
   if (zoomRafId) { cancelAnimationFrame(zoomRafId); zoomRafId=null; }
   applyT(true);
 }
@@ -449,10 +486,13 @@ function showInstructions() {
   document.getElementById('wikiContent').style.display = 'none';
 }
 
+const ROW_COLORS = { '1':'#b8860b','2':'#b8860b','3':'#2e86ab','4':'#27ae60','5':'#8e44ad' };
+
 function showWikiPanel(dot) {
   const wiki       = dot.dataset.wiki;
   const name       = dot.dataset.name;
   const seriesName = dot.dataset.series || '';
+  const rowColor   = ROW_COLORS[dot.dataset.row] || '#b8860b';
 
   document.getElementById('wikiEmpty').style.display   = 'none';
   document.getElementById('wikiContent').style.display = 'block';
@@ -461,6 +501,7 @@ function showWikiPanel(dot) {
   const seriesNameEl = document.getElementById('wikiSeriesName');
   if (seriesName) {
     seriesNameEl.textContent  = seriesName;
+    seriesNameEl.style.color  = rowColor;
     seriesEl.style.display    = 'block';
   } else {
     seriesNameEl.textContent  = '';
